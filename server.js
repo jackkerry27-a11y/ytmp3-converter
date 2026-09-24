@@ -180,13 +180,12 @@ app.get('/api/info', async (req, res) => {
     '--remote-components', 'ejs:github'
   ];
 
-  // Cookies varsa ekle (ek güvenlik katmanı - IP bağımlı değil)
-  if (fs.existsSync(infoCookiePath)) {
-    args.push('--cookies', infoCookiePath);
-    console.log('[Info] Using cookies.txt for auth');
-  } else {
-    console.warn('[Info] cookies.txt not found - YouTube may block bot detection');
-  }
+  // Cookies varsa ekle SADECE geçerliyse
+  // Not: Süresi dolmuş cookie'ler WARNING üretir ve gereksiz
+  // Android/iOS client'lar cookiesiz de çalışır, cookie'yi atlayabiliriz
+  // if (fs.existsSync(infoCookiePath)) {
+  //   args.push('--cookies', infoCookiePath);
+  // }
 
   args.push(cleanUrl);
 
@@ -287,11 +286,9 @@ app.post('/api/convert', (req, res) => {
   ];
 
   const cookiePath = path.join(__dirname, 'cookies.txt');
-  if (fs.existsSync(cookiePath)) {
-    args.push('--cookies', cookiePath);
-  } else {
-    console.warn(`[Convert] cookies.txt missing for job ${jobId}`);
-  }
+  // Cookies'i devre dışı bırak: Android/iOS client'lar cookiesiz çalışır
+  // Süresi dolmuş cookies sadece WARNING üretir ve exit code'u 1 yapar
+  // if (fs.existsSync(cookiePath)) { args.push('--cookies', cookiePath); }
 
   if (isAudio) {
     // Audio: get best audio stream and convert with ffmpeg
@@ -343,24 +340,34 @@ app.post('/api/convert', (req, res) => {
   });
 
   child.on('close', (code) => {
-    if (code === 0) {
-      // Find the actual file generated (in case yt-dlp named it with an extension)
-      fs.readdir(DOWNLOADS_DIR, (err, files) => {
-        const found = files ? files.find((f) => f.startsWith(jobId)) : null;
-        if (found) {
-          job.outputFileName = found;
-          job.status = 'completed';
-          job.progress = 100;
-          job.message = 'Dönüştürme tamamlandı! İndirmeye hazır.';
-        } else {
-          job.status = 'error';
-          job.error = 'Çıktı dosyası bulunamadı.';
-        }
-      });
-    } else {
-      job.status = 'error';
-      job.error = stderrOutput.trim() || 'Video dönüştürülürken bir hata meydana geldi.';
-    }
+    // CRITICAL FIX: yt-dlp exits with code 1 due to harmless warnings
+    // (SABR-only, PO Token missing, etc.) even when download succeeds.
+    // ALWAYS check if file exists first — if it does, it's a SUCCESS.
+    fs.readdir(DOWNLOADS_DIR, (err, files) => {
+      const found = files ? files.find((f) => f.startsWith(jobId)) : null;
+
+      if (found) {
+        // File exists = conversion succeeded, regardless of exit code
+        job.outputFileName = found;
+        job.status = 'completed';
+        job.progress = 100;
+        job.message = 'Dönüştürme tamamlandı! İndirmeye hazır.';
+        console.log(`[Convert] Job ${jobId} OK: ${found} (exit: ${code})`);
+      } else if (code !== 0) {
+        // No file + non-zero exit = real error — only show ERROR lines
+        const errMsg = stderrOutput
+          .split('\n')
+          .filter(l => l.includes('ERROR:'))
+          .join(' ')
+          .trim();
+        job.status = 'error';
+        job.error = errMsg || stderrOutput.trim() || 'Video dönüştürme başarısız oldu.';
+        console.error(`[Convert] Job ${jobId} FAILED (exit ${code}):`, job.error.slice(0, 200));
+      } else {
+        job.status = 'error';
+        job.error = 'Çıktı dosyası bulunamadı.';
+      }
+    });
   });
 
   child.on('error', (err) => {

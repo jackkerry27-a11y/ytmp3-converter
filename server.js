@@ -154,9 +154,14 @@ app.get('/api/info', async (req, res) => {
     '--no-warnings',
     '--no-playlist',
     '--skip-download',
-    '--extractor-args', 'youtube:player_client=visionos,ios,mweb',
+    '--extractor-args', 'youtube:player_client=android_creator,android,mweb,ios',
     cleanUrl
   ];
+
+  const infoCookiePath = path.join(__dirname, 'cookies.txt');
+  if (fs.existsSync(infoCookiePath)) {
+    args.push('--cookies', infoCookiePath);
+  }
 
   execFile('yt-dlp', args, { maxBuffer: 10 * 1024 * 1024, timeout: 12000 }, (error, stdout, stderr) => {
     let videoInfo = null;
@@ -245,8 +250,13 @@ app.post('/api/convert', (req, res) => {
     '--no-warnings',
     '--no-playlist',
     '--newline',
-    '--extractor-args', 'youtube:player_client=visionos,ios,mweb'
+    '--extractor-args', 'youtube:player_client=android_creator,android,mweb,ios'
   ];
+
+  const cookiePath = path.join(__dirname, 'cookies.txt');
+  if (fs.existsSync(cookiePath)) {
+    args.push('--cookies', cookiePath);
+  }
 
   if (isAudio) {
     args.push('-x');

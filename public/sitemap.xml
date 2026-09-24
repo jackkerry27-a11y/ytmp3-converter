@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- Main Turkish Landing Page -->
+  <url>
+    <loc>https://ytmp3pro.com/</loc>
+    <lastmod>2026-09-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://ytmp3pro.com/?lang=tr"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ytmp3pro.com/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ytmp3pro.com/?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ytmp3pro.com/?lang=de"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ytmp3pro.com/"/>
+  </url>
+
+  <!-- English Route -->
+  <url>
+    <loc>https://ytmp3pro.com/?lang=en</loc>
+    <lastmod>2026-09-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Spanish Route -->
+  <url>
+    <loc>https://ytmp3pro.com/?lang=es</loc>
+    <lastmod>2026-09-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- German Route -->
+  <url>
+    <loc>https://ytmp3pro.com/?lang=de</loc>
+    <lastmod>2026-09-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+</urlset>

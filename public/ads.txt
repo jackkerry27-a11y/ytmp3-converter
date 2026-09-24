@@ -1,0 +1,5 @@
+# Ads.txt File for YTConverter Pro
+# Reklam sağlayıcınızdan (Adsterra, Monetag, PropellerAds vb.) aldığınız satırları buraya ekleyin:
+# Örnek:
+# adsterra.com, PUBLISHER_ID, DIRECT, f08c47fec0942fa0
+# monetag.com, PUBLISHER_ID, DIRECT

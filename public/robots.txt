@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /downloads/
+
+# Sitemaps
+Sitemap: https://ytmp3pro.com/sitemap.xml

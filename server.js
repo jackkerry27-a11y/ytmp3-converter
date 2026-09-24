@@ -391,7 +391,7 @@ app.get('/api/download/:jobId', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
-    version: '1.0.0',
+    version: '1.0.3-live',
     service: 'YouTube MP3 Converter Pro Engine'
   });
 });

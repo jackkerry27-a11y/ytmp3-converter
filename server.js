@@ -154,7 +154,8 @@ app.get('/api/info', async (req, res) => {
     '--no-warnings',
     '--no-playlist',
     '--skip-download',
-    '--extractor-args', 'youtube:player_client=android,ios,web',
+    '--js-runtimes', 'node',
+    '--extractor-args', 'youtube:player_client=android',
     cleanUrl
   ];
 
@@ -245,7 +246,8 @@ app.post('/api/convert', (req, res) => {
     '--no-warnings',
     '--no-playlist',
     '--newline',
-    '--extractor-args', 'youtube:player_client=android,ios,web'
+    '--js-runtimes', 'node',
+    '--extractor-args', 'youtube:player_client=android'
   ];
 
   if (isAudio) {

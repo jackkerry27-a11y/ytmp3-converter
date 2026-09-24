@@ -4,4 +4,4 @@ Disallow: /api/
 Disallow: /downloads/
 
 # Sitemaps
-Sitemap: https://ytmp3pro.com/sitemap.xml
+Sitemap: https://ytmp3-converter-1.onrender.com/sitemap.xml

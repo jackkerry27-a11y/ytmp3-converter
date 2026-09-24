@@ -261,6 +261,7 @@ app.post('/api/convert', (req, res) => {
   }
 
   if (isAudio) {
+    args.push('-f', 'bestaudio/best');
     args.push('-x');
     if (ext === 'mp3') {
       args.push('--audio-format', 'mp3');
@@ -274,11 +275,11 @@ app.post('/api/convert', (req, res) => {
     }
     args.push('-o', path.join(DOWNLOADS_DIR, `${jobId}.%(ext)s`));
   } else {
-    // Video MP4 format
+    // Video MP4 format (compatible with all VP9/AV1/H264 sources merged into MP4)
     const maxHeight = parseInt(quality, 10) || 1080;
     args.push(
       '-f',
-      `bestvideo[height<=${maxHeight}][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best`,
+      `bestvideo[height<=${maxHeight}]+bestaudio/best[height<=${maxHeight}]/best`,
       '--merge-output-format',
       'mp4',
       '-o',

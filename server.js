@@ -293,8 +293,9 @@ app.post('/api/convert', (req, res) => {
     }
   });
 
+  let stderrOutput = '';
   child.stderr.on('data', (data) => {
-    // console.log('yt-dlp err data:', data.toString());
+    stderrOutput += data.toString();
   });
 
   child.on('close', (code) => {
@@ -314,7 +315,7 @@ app.post('/api/convert', (req, res) => {
       });
     } else {
       job.status = 'error';
-      job.error = 'Video dönüştürülürken bir hata meydana geldi.';
+      job.error = stderrOutput.trim() || 'Video dönüştürülürken bir hata meydana geldi.';
     }
   });
 

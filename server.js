@@ -154,7 +154,8 @@ app.get('/api/info', async (req, res) => {
     '--no-warnings',
     '--no-playlist',
     '--skip-download',
-    '--extractor-args', 'youtube:player_client=android_creator,android,mweb,ios',
+    '--remote-components', 'ejs:github',
+    '--extractor-args', 'youtube:player_client=visionos,mweb,ios',
     cleanUrl
   ];
 
@@ -250,7 +251,8 @@ app.post('/api/convert', (req, res) => {
     '--no-warnings',
     '--no-playlist',
     '--newline',
-    '--extractor-args', 'youtube:player_client=android_creator,android,mweb,ios'
+    '--remote-components', 'ejs:github',
+    '--extractor-args', 'youtube:player_client=visionos,mweb,ios'
   ];
 
   const cookiePath = path.join(__dirname, 'cookies.txt');

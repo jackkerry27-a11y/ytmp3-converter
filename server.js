@@ -2,8 +2,27 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const { spawn, execFile } = require('child_process');
+const { spawn, execFile, execFileSync } = require('child_process');
 const crypto = require('crypto');
+
+// Node.js binary path'ini bul (Linux/Render'da /usr/local/bin/node, Windows'ta 'node')
+function findNodeBin() {
+  const candidates = [
+    process.execPath,          // Bu sürecin kendi node binary'si (en güvenilir)
+    '/usr/local/bin/node',
+    '/usr/bin/node',
+    'node'
+  ];
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(c) || c === 'node') return c;
+    } catch(e) {}
+  }
+  return 'node';
+}
+const NODE_BIN = findNodeBin();
+console.log(`[Config] Node.js binary: ${NODE_BIN}`);
+console.log(`[Config] Platform: ${process.platform}`);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -148,23 +167,30 @@ app.get('/api/info', async (req, res) => {
     console.warn('oEmbed fetch error:', oeErr.message);
   }
 
-  // Step 2: Try yt-dlp with mobile android/ios client extractor args
+  // Step 2: Try yt-dlp with Node.js EJS solver for n-challenge bypass
+  const infoCookiePath = path.join(__dirname, 'cookies.txt');
   const args = [
     '--dump-single-json',
     '--no-warnings',
     '--no-playlist',
     '--skip-download',
-    '--remote-components', 'ejs:github',
-    '--extractor-args', 'youtube:player_client=visionos,mweb,ios',
-    cleanUrl
+    '--js-runtimes', NODE_BIN,
+    '--remote-components', 'ejs:github'
   ];
 
-  const infoCookiePath = path.join(__dirname, 'cookies.txt');
   if (fs.existsSync(infoCookiePath)) {
     args.push('--cookies', infoCookiePath);
+    console.log('[Info] Using cookies.txt for auth');
+  } else {
+    console.warn('[Info] cookies.txt not found - YouTube may block bot detection');
   }
 
-  execFile('yt-dlp', args, { maxBuffer: 10 * 1024 * 1024, timeout: 12000 }, (error, stdout, stderr) => {
+  args.push(cleanUrl);
+
+  // Render'da network latency daha yüksek, timeout'u artır
+  const infoTimeout = process.env.NODE_ENV === 'production' ? 30000 : 15000;
+
+  execFile('yt-dlp', args, { maxBuffer: 10 * 1024 * 1024, timeout: infoTimeout }, (error, stdout, stderr) => {
     let videoInfo = null;
 
     if (!error && stdout) {
@@ -246,26 +272,28 @@ app.post('/api/convert', (req, res) => {
 
   jobs.set(jobId, job);
 
-  // Build yt-dlp arguments
+  // Build yt-dlp arguments with Node.js EJS n-challenge solver
   let args = [
     '--no-warnings',
     '--no-playlist',
     '--newline',
-    '--remote-components', 'ejs:github',
-    '--extractor-args', 'youtube:player_client=visionos,mweb,ios'
+    '--js-runtimes', NODE_BIN,
+    '--remote-components', 'ejs:github'
   ];
 
   const cookiePath = path.join(__dirname, 'cookies.txt');
   if (fs.existsSync(cookiePath)) {
     args.push('--cookies', cookiePath);
+  } else {
+    console.warn(`[Convert] cookies.txt missing for job ${jobId}`);
   }
 
   if (isAudio) {
-    args.push('-f', 'bestaudio/best');
+    // Audio: get best audio stream and convert with ffmpeg
+    args.push('-f', 'bestaudio[ext=m4a]/bestaudio/best');
     args.push('-x');
     if (ext === 'mp3') {
       args.push('--audio-format', 'mp3');
-      // Enforce high CBR/VBR rate with ffmpeg
       const kbps = parseInt(quality, 10) || 320;
       args.push('--postprocessor-args', `ExtractAudio:-b:a ${kbps}k`);
     } else if (ext === 'm4a') {
@@ -275,15 +303,13 @@ app.post('/api/convert', (req, res) => {
     }
     args.push('-o', path.join(DOWNLOADS_DIR, `${jobId}.%(ext)s`));
   } else {
-    // Video MP4 format (compatible with all VP9/AV1/H264 sources merged into MP4)
-    const maxHeight = parseInt(quality, 10) || 1080;
+    // Video MP4: robust format fallback chain — never fails
+    const maxHeight = parseInt(quality, 10) || 720;
     args.push(
       '-f',
-      `bestvideo[height<=${maxHeight}]+bestaudio/best[height<=${maxHeight}]/best`,
-      '--merge-output-format',
-      'mp4',
-      '-o',
-      outputPath
+      `bestvideo[height<=${maxHeight}][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=${maxHeight}]+bestaudio/best[height<=${maxHeight}]/bestvideo+bestaudio/best`,
+      '--merge-output-format', 'mp4',
+      '-o', outputPath
     );
   }
 

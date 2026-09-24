@@ -192,10 +192,13 @@
   </header>
 
   <!-- TOP AD BANNER SLOT (728x90 Desktop / 320x50 Mobile) -->
+  <!-- Adsterra Banner: Panelden aldığınız Banner script'ini buraya yapıştırın -->
   <div class="ad-slot ad-slot-top" id="adTopSlot">
-    <div class="ad-placeholder">
-      <span class="ad-label">REKLAM ALANI (728x90 / Banner)</span>
-      <p class="ad-sub">Adsterra / Monetag banner reklam kodunuz buraya gelecektir</p>
+    <!-- ADSTERRA 728x90 LEADERBOARD KODU BURAYA -->
+    <!-- Örnek: <script async src="//www.profitableratecpmnetwork.com/ef/..."></script> -->
+    <div class="ad-placeholder" id="adTopFallback">
+      <span class="ad-label">REKLAM (728x90)</span>
+      <p class="ad-sub">Adsterra banner kodunuzu buraya yapıştırın</p>
     </div>
   </div>
 
@@ -334,8 +337,11 @@
     </section>
 
     <!-- MID AD BANNER SLOT (728x90) -->
+    <!-- Adsterra Banner: Panelden aldığınız Banner script'ini buraya yapıştırın -->
     <div class="ad-slot ad-slot-mid" id="adMidSlot">
-      <div class="ad-placeholder">
+      <!-- ADSTERRA 468x60 OR 728x90 KODU BURAYA -->
+      <!-- Örnek: <script async src="//www.profitableratecpmnetwork.com/ef/..."></script> -->
+      <div class="ad-placeholder" id="adMidFallback">
         <span class="ad-label">REKLAM ALANI (Geniş Banner)</span>
         <p class="ad-sub">Yüksek Tıklama Oranlı Reklam Alanı</p>
       </div>
@@ -507,7 +513,22 @@
   <!-- Main JavaScript Application -->
   <script src="/js/app.js"></script>
 
-  <!-- Adsterra Monetization Ad Script -->
+  <!-- 
+    ADSTERRA MONETIZATION REHBERI:
+    ==========================================
+    1. POPUNDER (En yüksek gelir): 
+       Adsterra Panelinizden Popunder kodu alın ve buraya yapıştırın:
+    -->
   <script src="https://pl31487297.profitableratecpmnetwork.com/db/cc/b7/dbccb74770049ed617ff666cac8d7ce5.js"></script>
+  <!--
+    2. BANNER REKLAMLAR:
+       Adsterra > Kampanyalar > Yeni > Banner secerek kod alıp
+       yukarıdaki #adTopSlot ve #adMidSlot içine yapıştırın.
+    
+    3. DIRECT LINK / SMARTLINK (İndir butonunda):
+       Adsterra > Direct Link > URL kopyala >
+       app.js dosyasında MONETIZATION_CONFIG.directLinkUrl'ye yapıştırın!
+    ==========================================
+  -->
 </body>
 </html>

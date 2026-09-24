@@ -5,15 +5,45 @@
 // ==========================================================================
 // 1. MONETIZATION & AD CONFIGURATION (Para Kazanma Ayarları)
 // ==========================================================================
+// ★ REKLAM AYARLARI ★
+// Adsterra SmartLink / Direct Link URL'nizi buraya yapıştırın:
+// Adsterra → Yeni Kampanya → Direct Link / SmartLink → URL'yi kopyalayın
 const MONETIZATION_CONFIG = {
-  // Kullanıcı "İndir" butonuna bastığında yeni sekmede reklam (Adsterra Direct Link / SmartLink) açılsın mı?
-  // Açmak için burayı true yapın ve directLinkUrl kısmına Adsterra linkinizi yapıştırın!
-  enableDirectLinkOnDownload: false,
-  directLinkUrl: 'https://example-ad-network.com/direct-link-placeholder',
+  // İndir butonuna basıldığında yeni sekmede reklam aç (Adsterra DirectLink)
+  // Adsterra panelinden aldığınız SmartLink URL'sini directLinkUrl'ye yapıştırın!
+  enableDirectLinkOnDownload: true,
+  directLinkUrl: 'https://www.profitableratecpmnetwork.com/click/xyz-placeholder',
+  // ↑↑ BURAYI KENDİ ADSTERRA SmartLink URL'NİZLE DEĞİŞTİRİN ↑↑
+
+  // Sayfa kaydırıldığında veya dönüştür butonuna basıldığında extra reklam tetikle
+  enableScrollAd: true,
+  scrollAdUrl: 'https://www.profitableratecpmnetwork.com/click/xyz-placeholder',
+  // ↑↑ İKİNCİ ADSTERRA SmartLink URL'NİZİ BURAYA YAPIŞTIRIN ↑↑
 
   // İndirme başlamadan önce geri sayım (saniye) - 0 ise doğrudan başlar
-  countdownSeconds: 0
+  countdownSeconds: 0,
+
+  // Kaç kez tıklamadan sonra reklam tekrar açılsın (spam önleme)
+  adCooldownMs: 30000  // 30 saniye
 };
+
+// Reklam tetikleyici (cooldown korumalı)
+const _adState = { lastFired: 0, scrollFired: false };
+function triggerDirectAd(url) {
+  if (!url || url.includes('placeholder')) return;
+  const now = Date.now();
+  if (now - _adState.lastFired < MONETIZATION_CONFIG.adCooldownMs) return;
+  _adState.lastFired = now;
+  try {
+    const w = window.open(url, '_blank', 'noopener,noreferrer,width=1,height=1');
+    // Bazı tarayıcılar popup'ı engeller; link elementi ile fallback
+    if (!w || w.closed || typeof w.closed === 'undefined') {
+      const a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+  } catch(e) { /* Popup blocker */ }
+}
 
 // ==========================================================================
 // 2. MULTI-LANGUAGE DICTIONARY (Çok Dilli SEO & Global Trafik)
@@ -290,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initEventListeners();
   initFaqAccordion();
   initPwa();
+  initScrollAd();
 });
 
 // ==========================================================================
@@ -350,6 +381,20 @@ function initEventListeners() {
       stickyAdBar.style.display = 'none';
     });
   }
+}
+
+// Scroll-tabanlı reklam tetikleyicisi (sayfa %40 kaydırılınca 1 kez tetiklenir)
+function initScrollAd() {
+  if (!MONETIZATION_CONFIG.enableScrollAd) return;
+  let scrollTriggered = false;
+  window.addEventListener('scroll', () => {
+    if (scrollTriggered) return;
+    const scrollPct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+    if (scrollPct >= 40) {
+      scrollTriggered = true;
+      triggerDirectAd(MONETIZATION_CONFIG.scrollAdUrl);
+    }
+  }, { passive: true });
 }
 
 // ==========================================================================
@@ -486,12 +531,8 @@ async function handleStartDownload() {
   if (!state.videoData || state.isProcessing) return;
 
   // 1. High Revenue Trigger (Adsterra DirectLink / SmartLink)
-  if (MONETIZATION_CONFIG.enableDirectLinkOnDownload && MONETIZATION_CONFIG.directLinkUrl) {
-    try {
-      window.open(MONETIZATION_CONFIG.directLinkUrl, '_blank', 'noopener,noreferrer');
-    } catch (e) {
-      console.warn('Ad pop trigger blocked or skipped', e);
-    }
+  if (MONETIZATION_CONFIG.enableDirectLinkOnDownload) {
+    triggerDirectAd(MONETIZATION_CONFIG.directLinkUrl);
   }
 
   // 2. Start conversion request

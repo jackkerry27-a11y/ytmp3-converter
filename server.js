@@ -167,17 +167,20 @@ app.get('/api/info', async (req, res) => {
     console.warn('oEmbed fetch error:', oeErr.message);
   }
 
-  // Step 2: Try yt-dlp with Node.js EJS solver for n-challenge bypass
+  // Step 2: yt-dlp ile video bilgisi çek
+  // Strateji: android/ios/mweb client'ları sunucu IP'lerinde bot tespitini atlatır
   const infoCookiePath = path.join(__dirname, 'cookies.txt');
   const args = [
     '--dump-single-json',
     '--no-warnings',
     '--no-playlist',
     '--skip-download',
+    '--extractor-args', 'youtube:player_client=android,mweb,ios',
     '--js-runtimes', NODE_BIN,
     '--remote-components', 'ejs:github'
   ];
 
+  // Cookies varsa ekle (ek güvenlik katmanı - IP bağımlı değil)
   if (fs.existsSync(infoCookiePath)) {
     args.push('--cookies', infoCookiePath);
     console.log('[Info] Using cookies.txt for auth');
@@ -272,11 +275,13 @@ app.post('/api/convert', (req, res) => {
 
   jobs.set(jobId, job);
 
-  // Build yt-dlp arguments with Node.js EJS n-challenge solver
+  // Build yt-dlp arguments
+  // Strateji: android/ios/mweb client'ları sunucu IP'lerinde bot tespitini atlatır
   let args = [
     '--no-warnings',
     '--no-playlist',
     '--newline',
+    '--extractor-args', 'youtube:player_client=android,mweb,ios',
     '--js-runtimes', NODE_BIN,
     '--remote-components', 'ejs:github'
   ];

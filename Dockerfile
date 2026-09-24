@@ -1,6 +1,6 @@
-FROM node:20-bullseye-slim
+FROM node:20-bookworm-slim
 
-# Gerekli sistem paketleri: ffmpeg, python3, curl
+# Debian 12 (Bookworm) en güncel LTS paketleri
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     python3 \
